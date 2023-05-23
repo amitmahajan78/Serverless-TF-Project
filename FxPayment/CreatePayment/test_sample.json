@@ -1,0 +1,11 @@
+{
+  "body": {
+    "destinationCurrency": "GBP",
+    "amount": 1000,
+    "payeeName": "John",
+    "beneficiaryName": "Alex",
+    "beneficiaryBankName": "HSBC",
+    "beneficiaryAccountNo": "1234",
+    "quoteId": "1001"
+  }
+}
