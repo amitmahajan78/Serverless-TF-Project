@@ -7,7 +7,7 @@ exports.handler = async (event, context) => {
   console.log('AccountID:  ' + awsAccountId);
   console.log('Region:  ' + region_code);
   if (
-    event.Records[0].dynamodb.NewImage.paymentStatus.S === 'FxPayment Created'
+    event.Records[0].dynamodb.NewImage.paymentStatus.S === 'PAYMENT_CREATED'
   ) {
     console.log(
       'Sending SQS Message for paymentId: ' +

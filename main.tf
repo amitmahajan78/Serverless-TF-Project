@@ -12,6 +12,12 @@ module "fx-platform" {
   source     = "./FxProcessingPlatform"
 }
 
+module "fx-settlement" {
+  depends_on     = [module.fx-platform]
+  source         = "./Settlement"
+  event_bus_name = module.fx-platform.event_bus_name
+}
+
 terraform {
   required_providers {
     aws = {

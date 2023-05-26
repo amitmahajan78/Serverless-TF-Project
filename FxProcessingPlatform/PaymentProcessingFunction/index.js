@@ -24,7 +24,7 @@ exports.handler = async function (event, context) {
       },
       UpdateExpression: 'SET paymentStatus = :name',
       ExpressionAttributeValues: {
-        ':name': 'FxPayment sent for fulfilment',
+        ':name': 'PAYMENT_SENT_FOR_FULFILLMENT',
       },
     };
 
@@ -55,10 +55,16 @@ exports.handler = async function (event, context) {
                 S: body.paymentId.S,
               },
               paymentStatus: {
-                S: randomNum > 0.25 ? 'FxPayment sent for fulfilment' : 'Error',
+                S:
+                  randomNum > 0.25
+                    ? 'PAYMENT_SENT_FOR_FULFILLMENT'
+                    : 'PAYMENT_ERROR',
               },
               destinationCurrency: {
                 S: body.destinationCurrency.S,
+              },
+              quoteId: {
+                S: body.quoteId.S,
               },
             },
           }),

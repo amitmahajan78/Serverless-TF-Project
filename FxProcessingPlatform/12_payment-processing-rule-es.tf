@@ -35,7 +35,7 @@ resource "aws_cloudwatch_event_rule" "NotificationRule" {
         "paymentStatus" : {
           "S" : [
             {
-              "prefix" : "FxPayment sent for fulfilment"
+              "prefix" : "PAYMENT_SENT_FOR_FULFILLMENT"
             }
           ]
         }
@@ -59,7 +59,7 @@ resource "aws_cloudwatch_event_target" "EmailNotification" {
       "beneficiaryName" : "$.detail.message.beneficiaryName.S",
       "destinationCurrency" : "$.detail.message.destinationCurrency.S"
     }
-    input_template = "\"Hi <payeeName>, Payment of <amount> in <destinationCurrency> has been transferred to <beneficiaryName>. You can check the details about your transaction by calling following API [GET] /fx-payments?paymentId=<paymentId>. Thank You!\""
+    input_template = "\"Hi <payeeName>, We are processing payment of <amount> in <destinationCurrency> for <beneficiaryName>. You can check the details about your transaction by calling following API [GET] /fx-payments?paymentId=<paymentId>. Thank You!\""
   }
   event_bus_name = aws_cloudwatch_event_bus.FxPaymentEventBus.name
 }

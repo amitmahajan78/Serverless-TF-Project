@@ -2,7 +2,7 @@ const AWS = require('aws-sdk');
 const documentClient = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async (event) => {
-  console.log('Payment Completed Logs: ' + JSON.stringify(event));
+  console.log('Payment Event Logs: ' + JSON.stringify(event));
 
   const body = event.detail.message;
   console.log(
@@ -21,9 +21,9 @@ exports.handler = async (event) => {
     UpdateExpression: 'SET paymentStatus = :name',
     ExpressionAttributeValues: {
       ':name':
-        body.paymentStatus.S === 'FxPayment sent for fulfilment'
-          ? 'FxPayment Completed'
-          : 'Waiting for fulfilment',
+        body.paymentStatus.S === 'PAYMENT_SENT_FOR_FULFILLMENT'
+          ? 'PAYMENT_COMPLETED'
+          : 'WAITING_FOR_FULFILLMENT',
     },
   };
 

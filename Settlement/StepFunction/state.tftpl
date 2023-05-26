@@ -1,0 +1,161 @@
+{
+  "Comment": "A Hello World example demonstrating various state types of the Amazon States Language",
+  "StartAt": "Receving Event from EventBridge",
+  "States": {
+    "Receving Event from EventBridge": {
+      "Type": "Pass",
+      "Parameters": {
+        "body": {
+          "paymentId.$": "$.detail.message.paymentId.S",
+          "paymentStatus.$": "$.detail.message.paymentStatus.S",
+          "destinationCurrency.$": "$.detail.message.destinationCurrency.S",
+          "beneficiaryName.$": "$.detail.message.beneficiaryName.S",
+          "amount.$": "$.detail.message.amount.N",
+          "payeeName.$": "$.detail.message.payeeName.S",
+          "quoteId.$": "$.detail.message.quoteId.S"
+        }
+      },
+      "OutputPath": "$.body",
+      "Next": "Check Payment Status"
+    },
+    "Check Payment Status": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.paymentStatus",
+          "StringMatches": "PAYMENT_SENT_FOR_FULFILLMENT",
+          "Next": "Processing Payment"
+        }
+      ],
+      "Default": "DynamoDB UpdateItem Error"
+    },
+    "DynamoDB UpdateItem Error": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:updateItem",
+      "Parameters": {
+        "TableName": "fx-payments",
+        "Key": {
+          "paymentId": {
+            "S.$": "$.paymentId"
+          }
+        },
+        "UpdateExpression": "SET paymentStatus = :myValueRef",
+        "ExpressionAttributeValues": {
+          ":myValueRef": {
+            "S": "PAYMENT_ERROR"
+          }
+        }
+      },
+      "Next": "SNS Failure Notification",
+      "ResultPath": "$.output"
+    },
+    "Processing Payment": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${region}:${account_id}:function:PaymentOptionsFunction",
+      "OutputPath": "$",
+      "Parameters": {
+        "Payload.$": "$"
+      },
+      "ResultPath": "$",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Payment Options"
+    },
+    "Payment Options": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.body.paymentStatus",
+          "StringMatches": "LOW_COST_TRANSFER_COMPLETED",
+          "Next": "Low fee payment"
+        }
+      ],
+      "Default": "Fast Transfer"
+    },
+    "Low fee payment": {
+      "Type": "Wait",
+      "Seconds": 5,
+      "Next": "DynamoDB UpdateItem Slow"
+    },
+    "DynamoDB UpdateItem Slow": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:updateItem",
+      "Parameters": {
+        "TableName": "fx-payments",
+        "Key": {
+          "paymentId": {
+            "S.$": "$.body.paymentId"
+          }
+        },
+        "UpdateExpression": "SET paymentStatus = :myValueRef",
+        "ExpressionAttributeValues": {
+          ":myValueRef": {
+            "S": "LOW_COST_TRANSFER_COMPLETED"
+          }
+        }
+      },
+      "ResultPath": "$.output",
+      "Next": "SNS Sucess Notification"
+    },
+    "Fast Transfer": {
+      "Type": "Pass",
+      "Next": "DynamoDB UpdateItem Fast"
+    },
+    "DynamoDB UpdateItem Fast": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:updateItem",
+      "Parameters": {
+        "TableName": "fx-payments",
+        "Key": {
+          "paymentId": {
+            "S.$": "$.body.paymentId"
+          }
+        },
+        "UpdateExpression": "SET paymentStatus = :myValueRef",
+        "ExpressionAttributeValues": {
+          ":myValueRef": {
+            "S": "FAST_TRANSFER_COMPLETED"
+          }
+        }
+      },
+      "ResultPath": "$.output",
+      "Next": "SNS Sucess Notification"
+    },
+    "SNS Failure Notification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:${region}:${account_id}:FxPaymentNotification",
+        "Message.$": "States.Format(' Hi {}, We have found some issues with your Payment Id {}. We are currently working on to resolving the issue. Thanks, Payment Support Team',$.payeeName, $.paymentId)",
+        "Subject": "Payment Processing delayed due to issue in transfer"
+      },
+      "ResultPath": "$.output",
+      "Next": "Success"
+    },
+    "SNS Sucess Notification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:${region}:${account_id}:FxPaymentNotification",
+        "Message.$": "States.Format(' Hi {}, Payment of {} in {} has been transferred to {}. You can check the details about your transaction by calling the following API [GET] /fx-payments?paymentId={}. Thank You!',$.body.payeeName, $.body.amount, $.body.destinationCurrency, $.body.beneficiaryName, $.body.paymentId)",
+        "Subject.$": "States.Format('Payment Processed [{}]', $.body.paymentStatus)"
+      },
+      "ResultPath": "$.output",
+      "Next": "Success"
+    },
+    "Success": {
+      "Type": "Succeed"
+    }
+  }
+}

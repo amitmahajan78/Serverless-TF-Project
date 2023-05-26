@@ -27,7 +27,7 @@ exports.handler = async (event, context, callback) => {
       beneficiaryBankName: requestBody.beneficiaryBankName,
       beneficiaryAccountNo: requestBody.beneficiaryAccountNo,
       quoteId: requestBody.quoteId,
-      paymentStatus: 'FxPayment Created',
+      paymentStatus: 'PAYMENT_CREATED',
     },
   };
 
