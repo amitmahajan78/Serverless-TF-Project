@@ -1,4 +1,4 @@
-# Automate Event_drive (Serverless) Deployment Architecture using Terraform
+# Automate Event-Driven (Serverless) Deployment Architecture using Terraform
 
 This repository giving you realistic use case that built on AWS serverless technologies and completely automate their deployment using terraform. Infrastructure as a Code (IaC) help improving overall Consistency, Automation, Security, Reliability and Collaboration of an Event-Driven (Serverless) Architecture. 
 
