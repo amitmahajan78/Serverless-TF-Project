@@ -1,19 +1,19 @@
 
-module "fx-quote" {
-  source = "./FxQuote"
+module "quote" {
+  source = "./Quote"
 }
 
-module "fx-payment" {
-  source = "./FxPayment"
+module "payment" {
+  source = "./Payment"
 }
 
-module "fx-platform" {
-  depends_on = [module.fx-payment]
-  source     = "./FxProcessingPlatform"
+module "platform" {
+  depends_on = [module.payment]
+  source     = "./ProcessingPlatform"
 }
 
-module "fx-settlement" {
-  depends_on     = [module.fx-platform]
+module "settlement" {
+  depends_on     = [module.platform]
   source         = "./Settlement"
   event_bus_name = module.fx-platform.event_bus_name
 }

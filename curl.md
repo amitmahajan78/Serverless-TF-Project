@@ -6,14 +6,14 @@ export API_ID=qq7ezoal41
 export AWS_REGION=eu-west-1
 export API_STAGE=stage
 
-## Testing /quotes POSt API
+## Testing /quotes POST API
 
 ### Successful scenario 
 ```
 curl -X POST \
      -H "Content-Type: application/json" \
      -d '{"destinationCurrency": "GBP","amount": 1000}' \
-     https://nqwnig494b.execute-api.eu-west-1.amazonaws.com/stage/payments
+     https://$API_ID.execute-api.$AWS_REGION.amazonaws.com/$API_STAGE/payments
 ```
 
 ### Amount check error scenario 
@@ -45,6 +45,7 @@ curl -X POST \
 ```
 curl -X POST \
      -H "Content-Type: application/json" \
+      -H "Authorization: secrettoken" \
      -d '{"destinationCurrency": "GBP123", "amount": 1000, "payeeName": "John", "beneficiaryName": "Alex", "beneficiaryBankName": "HSBC", "beneficiaryAccountNo": "1234", "quoteId": "1001"}' \
      https://$API_ID.execute-api.$AWS_REGION.amazonaws.com/$API_STAGE/fx-payments
 ```
@@ -53,7 +54,7 @@ curl -X POST \
 
 ### Testing successful request
 ```
-curl "https://$API_ID.execute-api.$AWS_REGION.amazonaws.com/$API_STAGE/fx-payments?paymentId=PYID841547635"
+curl -H "Authorization: secrettoken" "https://$API_ID.execute-api.$AWS_REGION.amazonaws.com/$API_STAGE/fx-payments?paymentId=PYID841547635"
 ```
 
 ## POST /fx-payments with Authorization token (Create payment)
@@ -63,11 +64,11 @@ curl -X POST \
      -H "Content-Type: application/json" \
      -H "Authorization: secrettoken" \
      -d '{"destinationCurrency": "GBP", "amount": 1000, "payeeName": "John", "beneficiaryName": "Alex", "beneficiaryBankName": "HSBC", "beneficiaryAccountNo": "1234", "quoteId": "1001"}' \
-      https://nqwnig494b.execute-api.eu-west-1.amazonaws.com/stage/payments
+      https://$API_ID.execute-api.$AWS_REGION.amazonaws.com/$API_STAGE/payments
 ```     
 
 ## GET /fx-payments with authorization token (Get payment)
 
 ```
-curl -H "Authorization: secrettoken" "https://nqwnig494b.execute-api.eu-west-1.amazonaws.com/stage/payments"
+curl -H "Authorization: secrettoken" "https://$API_ID.execute-api.$AWS_REGION.amazonaws.com/$API_STAGE/payments"
 ```
